@@ -1,0 +1,151 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <title>Backbone JS AJAX form</title>
+    </head>
+    <body>
+        <p>Example of a form processed with AJAX using jQuery, BackboneJS and a <a href="http://addyosmani.com/largescalejavascript/#mediatorpattern">mediator module</a> to publish events.</p>
+        <form action="response.json" class="ajax">
+            <fieldset>
+                <p><label for="firstName">First Name</label> <input id="first-name" type="text" name="FirstName"></p>
+                <p><label for="last-name">Last Name</label> <input id="last-name" type="text" name="LastName"></p>
+                <p><label for="comment">Comment</label></p>
+                <p><textarea name="comment" id="comment" cols="30" rows="10"></textarea></p>
+            </fieldset>
+            <p><input type="submit" value="submit"></p>
+        </form>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+        <script>
+            (function($, _, Backbone){
+
+                'use strict';
+
+                var Mediator = function(){
+
+                    var subscribe = function(channel, fn){
+                        if (!this.channels[channel]) {
+                            this.channels[channel] = [];
+                        }
+                        this.channels[channel].push({
+                            context: this,
+                            callback: fn
+                        });
+                        return this;
+                    },
+
+                    publish = function(channel){
+                        if (!this.channels[channel]) {
+                            return false;
+                        }
+
+                        var args = Array.prototype.slice.call(arguments, 1);
+
+                        for (var i = 0, l = this.channels[channel].length; i < l; i++) {
+                            var subscription = this.channels[channel][i];
+                            subscription.callback.apply(subscription.context, args);
+                        }
+
+                        return this;
+                    };
+
+                    return {
+                        channels: {},
+                        publish: publish,
+                        subscribe: subscribe,
+                        installTo: function(obj){
+                            obj.subscribe = subscribe;
+                            obj.publish = publish;
+                        }
+                    };
+                };
+
+                var AjaxForm = Backbone.View.extend({
+
+                    el: 'form.ajax',
+
+                    currentState: '',
+
+                    stateClasses: {
+                        error: 'state-error',
+                        loading: 'state-loading',
+                        success: 'state-success'
+                    },
+
+                    events:{
+                        'submit' : 'submit'
+                    },
+
+                    initialize: function(){
+                        this.url = this.$el.attr('action');
+                        this.type = ( this.$el.attr('method') ) ? this.$el.attr('method') : 'GET';
+                    },
+
+                    setState: function(state){
+                        this.$el.removeClass(this.stateClasses[this.currentState]);
+                        this.$el.addClass(this.stateClasses[state]);
+
+                        this.currentState = state;
+
+                        if(state === 'loading'){
+                            $('input, select, textarea', this.$el).attr('disabled', 'disabled');
+                        }else{
+                            $('input, select, textarea', this.$el).removeAttr('disabled');
+                        }
+                    },
+
+                    result: function(result, response){
+                        this.setState(result);
+
+                        // Publish event
+                        App.mediator.publish('ajaxFormLoaded', {
+                            result: result,
+                            response: response,
+                            $el: this.$el
+                        });
+                    },
+
+                    submit: function(e){
+                        e.preventDefault();
+
+                        var self = this;
+
+                        this.setState('loading');
+
+                        $.ajax({
+
+                            type: this.type,
+
+                            url: this.url,
+
+                            data: this.$el.serialize(),
+
+                            error: function(response){
+                                self.result('error', response);
+                            },
+
+                            success: function(response){
+                                self.result('success', response);
+                            },
+                        })
+                    }
+                });
+
+                var App = {};
+
+                App.mediator = new Mediator();
+
+                App.mediator.subscribe('ajaxFormLoaded', function(arg){
+                    console.log(arg);
+
+                    //...handle response here
+                    
+                });
+
+                var form = new AjaxForm();
+
+            })(jQuery, _, Backbone);
+        </script>
+    </body>
+</html>
