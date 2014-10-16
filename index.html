@@ -111,7 +111,6 @@
 
                         var self = this;
 
-                        this.setState('loading');
 
                         $.ajax({
 
@@ -128,7 +127,9 @@
                             success: function(response){
                                 self.result('success', response);
                             },
-                        })
+                        });
+                        
+                        this.setState('loading');
                     }
                 });
 
