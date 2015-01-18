@@ -63,7 +63,7 @@
                 };
 
                 // Use FormData if supported, allows sending file input data
-                if (typeof window.FormData === 'function') {
+                if (typeof window.FormData === 'function' || typeof window.FormData === 'object') {
                     options.data = new FormData(this.el);
                     options.processData = false;
                     options.contentType = false;
