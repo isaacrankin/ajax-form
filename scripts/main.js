@@ -11,9 +11,9 @@
         currentState: '',
 
         stateClasses: {
+            success: 'state-success',
             error: 'state-error',
-            loading: 'state-loading',
-            success: 'state-success'
+            loading: 'state-loading'
         },
 
         events:{
@@ -30,6 +30,7 @@
 
             this.currentState = state;
 
+            // Prevent user from editing form while loading
             if(state === 'loading'){
                 $('input, select, textarea', this.$el).attr('disabled', 'disabled');
             }else{
@@ -37,7 +38,8 @@
             }
         },
 
-        result: function(result, response){
+        result: function(response, result){
+
             this.setState(result);
 
             // Publish event
@@ -50,37 +52,27 @@
 
         submit: function(e){
 
-            var self = this;
+            // Prevent form from submitting normally
+            e.preventDefault();
 
-            var formData = this.$el.serialize(),
-                processData = true, // jQuery default
-                contentType = 'application/x-www-form-urlencoded; charset=UTF-8'; // jQuery default
+            var options = {
+                type: 'POST',
+                url: this.url,
+                data: this.$el.serialize(),
+                error: this.result,
+                success: this.result
+            };
 
             // Use FormData if supported, allows sending file input data
             if(typeof window.FormData === 'function'){
-                var formData = new FormData(this.el),
-                    processData = false,
-                    contentType = false;
-            }
+                options.data = new FormData(this.el);
+                options.processData = false;
+                options.contentType = false;
+            };
 
-            $.ajax({
-                type: 'POST',
-                url: this.url,
-                processData: processData,
-                contentType: contentType,
-                cache: false,
-                data: formData,
-                error: function(response){
-                    self.result('error', response);
-                },
-                success: function(response){
-                    self.result('success', response);
-                }
-            });
+            $.ajax(options);
 
             this.setState('loading');
-
-            e.preventDefault();
         }
     });
 
