@@ -1,85 +1,83 @@
-(function($, _, Backbone){
+(function ($, _, Backbone) {
 
     'use strict';
 
-    var App = {};
+    var App = {},
+        AjaxFormView = Backbone.View.extend({
+            el: 'form.ajax',
 
-    var AjaxFormView = Backbone.View.extend({
+            currentState: '',
 
-        el: 'form.ajax',
+            stateClasses: {
+                success: '__success',
+                error: '__error',
+                loading: '__loading'
+            },
 
-        currentState: '',
+            events: {
+                'submit' : 'submit'
+            },
 
-        stateClasses: {
-            success: '__success',
-            error: '__error',
-            loading: '__loading'
-        },
+            initialize: function (options) {
+                this.url = (options && options.url) ? options.url : this.$el.attr('action');
+            },
 
-        events:{
-            'submit' : 'submit'
-        },
+            setState: function (state) {
 
-        initialize: function(options){
-            this.url = (options && options.url) ? options.url : this.$el.attr('action');
-        },
+                // Update state class on form
+                this.$el.removeClass(this.stateClasses[this.currentState]);
+                this.$el.addClass(this.stateClasses[state]);
+                this.currentState = state;
 
-        setState: function(state){
+                // Prevent user from editing form while loading
+                if (state === 'loading') {
+                    $('input, select, textarea', this.$el).attr('disabled', 'disabled');
+                } else {
+                    $('input, select, textarea', this.$el).removeAttr('disabled');
+                }
+            },
 
-            // Update state class on form
-            this.$el.removeClass(this.stateClasses[this.currentState]);
-            this.$el.addClass(this.stateClasses[state]);
-            this.currentState = state;
+            result: function (response, result) {
 
-            // Prevent user from editing form while loading
-            if(state === 'loading'){
-                $('input, select, textarea', this.$el).attr('disabled', 'disabled');
-            }else{
-                $('input, select, textarea', this.$el).removeAttr('disabled');
+                this.setState(result);
+
+                // Publish event
+                App.mediator.publish('ajaxFormLoaded', {
+                    result: result,
+                    response: response,
+                    $el: this.$el
+                });
+            },
+
+            submit: function (e) {
+
+                // Prevent form from submitting normally
+                e.preventDefault();
+
+                var options = {
+                    type: 'POST',
+                    url: this.url,
+                    data: this.$el.serialize(),
+                    error: $.proxy(this.result, this),
+                    success: $.proxy(this.result, this)
+                };
+
+                // Use FormData if supported, allows sending file input data
+                if (typeof window.FormData === 'function') {
+                    options.data = new FormData(this.el);
+                    options.processData = false;
+                    options.contentType = false;
+                }
+
+                $.ajax(options);
+
+                this.setState('loading');
             }
-        },
-
-        result: function(response, result){
-
-            this.setState(result);
-
-            // Publish event
-            App.mediator.publish('ajaxFormLoaded', {
-                result: result,
-                response: response,
-                $el: this.$el
-            });
-        },
-
-        submit: function(e){
-
-            // Prevent form from submitting normally
-            e.preventDefault();
-
-            var options = {
-                type: 'POST',
-                url: this.url,
-                data: this.$el.serialize(),
-                error: $.proxy(this.result, this),
-                success: $.proxy(this.result, this)
-            };
-
-            // Use FormData if supported, allows sending file input data
-            if(typeof window.FormData === 'function'){
-                options.data = new FormData(this.el);
-                options.processData = false;
-                options.contentType = false;
-            };
-
-            $.ajax(options);
-
-            this.setState('loading');
-        }
-    });
+        });
 
     App.mediator = new Mediator();
 
-    App.mediator.subscribe('ajaxFormLoaded', function(arg){
+    App.mediator.subscribe('ajaxFormLoaded', function (arg) {
 
         //...handle response here
         console.log(arg.response);
