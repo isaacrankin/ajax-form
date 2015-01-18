@@ -11,23 +11,24 @@
         currentState: '',
 
         stateClasses: {
-            success: 'state-success',
-            error: 'state-error',
-            loading: 'state-loading'
+            success: '__success',
+            error: '__error',
+            loading: '__loading'
         },
 
         events:{
             'submit' : 'submit'
         },
 
-        initialize: function(){
-            this.url = this.$el.attr('action');
+        initialize: function(options){
+            this.url = (options && options.url) ? options.url : this.$el.attr('action');
         },
 
         setState: function(state){
+
+            // Update state class on form
             this.$el.removeClass(this.stateClasses[this.currentState]);
             this.$el.addClass(this.stateClasses[state]);
-
             this.currentState = state;
 
             // Prevent user from editing form while loading
@@ -39,8 +40,6 @@
         },
 
         result: function(response, result){
-
-            console.log(this);
 
             this.setState(result);
 

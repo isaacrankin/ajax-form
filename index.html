@@ -2,6 +2,28 @@
 <html>
     <head>
         <title>Backbone JS AJAX form</title>
+        <style type="text/css">
+            form.ajax{
+                padding: 20px;
+            }
+
+            fieldset{
+                border: 0;
+                padding: 0;
+            }
+
+            form.ajax.__loading{
+                border: 2px solid #00F;
+            }
+
+            form.ajax.__success{
+                border: 2px solid #0F0;
+            }
+
+            form.ajax.__error{
+                border: 2px solid #F00;
+            }
+        </style>
     </head>
     <body>
         <p>Example of a form processed with AJAX using jQuery, BackboneJS and a <a href="http://addyosmani.com/largescalejavascript/#mediatorpattern">mediator module</a> to publish events.</p>
