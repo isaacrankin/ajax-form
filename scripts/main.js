@@ -40,6 +40,8 @@
 
         result: function(response, result){
 
+            console.log(this);
+
             this.setState(result);
 
             // Publish event
@@ -59,8 +61,8 @@
                 type: 'POST',
                 url: this.url,
                 data: this.$el.serialize(),
-                error: this.result,
-                success: this.result
+                error: $.proxy(this.result, this),
+                success: $.proxy(this.result, this)
             };
 
             // Use FormData if supported, allows sending file input data
