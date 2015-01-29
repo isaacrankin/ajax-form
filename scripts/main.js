@@ -59,7 +59,26 @@
                     url: this.url,
                     data: this.$el.serialize(),
                     error: $.proxy(this.result, this),
-                    success: $.proxy(this.result, this)
+                    success: $.proxy(this.result, this),
+                    xhr: function () {
+
+                        var xhr = new window.XMLHttpRequest();
+
+                        // Download progress
+                        xhr.addEventListener("progress", function (evt) {
+
+                            // Server must return Content Length header for this to work
+                            if (evt.lengthComputable) {
+
+                                var percentComplete = evt.loaded / evt.total;
+
+                                console.log(Math.round(percentComplete * 100) + '%');
+
+                            }
+                        }, false);
+
+                        return xhr;
+                    }
                 };
 
                 // Use FormData if supported, allows sending file input data
