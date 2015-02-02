@@ -64,17 +64,13 @@
 
                         var xhr = new window.XMLHttpRequest();
 
-                        // Download progress
-                        xhr.addEventListener("progress", function (evt) {
+                        // Upload progress
+                        xhr.upload.addEventListener('progress', function (evt) {
 
-                            // Server must return Content Length header for this to work
-                            if (evt.lengthComputable) {
+                            var percentComplete = Math.round( (evt.loaded / evt.total) * 100);
+                            $('progress', this.$el).html( percentComplete + '%' );
+                            $('progress', this.$el).val( percentComplete );
 
-                                var percentComplete = evt.loaded / evt.total;
-
-                                console.log(Math.round(percentComplete * 100) + '%');
-
-                            }
                         }, false);
 
                         return xhr;
