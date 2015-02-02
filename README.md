@@ -1,7 +1,7 @@
 
 # AJAX Form
 
-Example of a form processed with AJAX using jQuery, BackboneJS and a [mediator module](http://addyosmani.com/largescalejavascript/#mediatorpattern) to publish events.
+Example of a form processed with AJAX using [jQuery](http://jquery.com/), [BackboneJS](http://backbonejs.org/) and a [mediator module](http://addyosmani.com/largescalejavascript/#mediatorpattern) to publish events.
 It supports uploading files using the [FormData interface](https://developer.mozilla.org/en-US/docs/Web/API/FormData).
 
 ## Browser support
