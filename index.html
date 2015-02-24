@@ -1,9 +1,9 @@
 <!DOCTYPE>
 <html>
     <head>
-        <title>Backbone JS AJAX form</title>
+        <title>AJAX form</title>
         <style type="text/css">
-            form.ajax{
+            form{
                 padding: 20px;
             }
 
@@ -12,24 +12,25 @@
                 padding: 0;
             }
 
-            form.ajax.__loading{
+            form.__loading{
                 border: 2px solid #00F;
             }
 
-            form.ajax.__success{
+            form.__success{
                 border: 2px solid #0F0;
             }
 
-            form.ajax.__error{
+            form.__error{
                 border: 2px solid #F00;
             }
         </style>
     </head>
     <body>
-        <p>Example of a form processed with AJAX using jQuery, BackboneJS and a <a href="http://addyosmani.com/largescalejavascript/#mediatorpattern">mediator module</a> to publish events.</p>
-        <form action="response.php" class="ajax" enctype="multipart/form-data" method="post" name="example-form">
+        <h3>AJAX forms</h3>
+        <form id="form-1" action="response.php" enctype="multipart/form-data" method="post" name="example-form">
+            <h4>First Form</h4>
             <fieldset>
-                <p><label for="firstName">First Name</label> <input id="first-name" type="text" name="FirstName"></p>
+                <p><label for="first-name">First Name</label> <input id="first-name" type="text" name="FirstName"></p>
                 <p><label for="last-name">Last Name</label> <input id="last-name" type="text" name="LastName"></p>
                 <p><label for="comment">Comment</label></p>
                 <p><label for="photo">Photo</label> <input type="file" id="photo" name="photo"/></p>
@@ -38,10 +39,15 @@
             </fieldset>
             <p><input type="submit" value="submit"></p>
         </form>
+        <hr/>
+        <form id="form-2" action="response.php?other" enctype="multipart/form-data" method="post" name="other-example-form">
+            <h4>Second Form</h4>
+            <fieldset>
+                <p><label for="other-first-name">Other First Name</label> <input id="other-first-name" type="text" name="OtherFirstName"></p>
+            </fieldset>
+            <p><input type="submit" value="submit"></p>
+        </form>
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
-        <script src="scripts/mediator.js"></script>
         <script src="scripts/main.js"></script>
     </body>
 </html>

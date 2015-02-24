@@ -1,103 +1,135 @@
-(function ($, _, Backbone) {
+// TODO: allow for multiple ajax forms on page
+// TODO: decouple setState function
+
+var AjaxFormView = function(options){
 
     'use strict';
 
-    var App = {},
-        AjaxFormView = Backbone.View.extend({
-            el: 'form.ajax',
+    var _handleSubmit = function (e) {
 
+        var $form = $(e.currentTarget);
+
+        var options = {
+            type: 'POST',
+            url: module.settings.url,
+            data: $form.serialize(),
+            error: _handleResult,
+            success: _handleResult,
+            xhr: function () {
+
+                var xhr = new window.XMLHttpRequest();
+
+                // Upload progress
+                xhr.upload.addEventListener('progress', function (evt) {
+
+                    var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                    $('progress', $form).html(percentComplete + '%');
+                    $('progress', $form).val(percentComplete);
+
+                }, false);
+
+                return xhr;
+            }
+        };
+
+        // Use FormData if supported, allows sending file input data
+        if (typeof window.FormData === 'function' || typeof window.FormData === 'object') {
+            options.data = new FormData($form[0]);
+            options.processData = false;
+            options.contentType = false;
+        }
+
+        $.ajax(options);
+
+        module.setState('loading', $form);
+    };
+
+    var _handleResult = function (response, result) {
+        module.setState(result);
+        if(typeof module.settings.callback === 'function'){
+            module.settings.callback(response, result);
+        }
+    };
+
+    var module = {
+
+        settings: {
             currentState: '',
-
             stateClasses: {
                 success: '__success',
                 error: '__error',
                 loading: '__loading'
-            },
+            }
+        },
 
-            events: {
-                'submit' : 'submit'
-            },
+        setState: function (state) {
 
-            initialize: function (options) {
-                this.url = (options && options.url) ? options.url : this.$el.attr('action');
-            },
+            var $el = this.settings.$el;
 
-            setState: function (state) {
+            // Update state class on form
+            $el.removeClass(this.settings.stateClasses[this.settings.currentState]);
+            $el.addClass(this.settings.stateClasses[state]);
+            this.settings.currentState = state;
 
-                // Update state class on form
-                this.$el.removeClass(this.stateClasses[this.currentState]);
-                this.$el.addClass(this.stateClasses[state]);
-                this.currentState = state;
+            // Prevent user from editing form while loading
+            if (state === 'loading') {
+                $('input, select, textarea', $el).attr('disabled', 'disabled');
+            } else {
+                $('input, select, textarea', $el).removeAttr('disabled');
+            }
 
-                // Prevent user from editing form while loading
-                if (state === 'loading') {
-                    $('input, select, textarea', this.$el).attr('disabled', 'disabled');
-                } else {
-                    $('input, select, textarea', this.$el).removeAttr('disabled');
-                }
-            },
+            return $el;
+        },
 
-            result: function (response, result) {
+        events: function () {
 
-                this.setState(result);
+            var self = this;
 
-                // Publish event
-                App.mediator.publish('ajaxFormLoaded', {
-                    result: result,
-                    response: response,
-                    $el: this.$el
-                });
-            },
-
-            submit: function (e) {
+            this.settings.$el.submit(function (e) {
 
                 // Prevent form from submitting normally
                 e.preventDefault();
 
-                var options = {
-                    type: 'POST',
-                    url: this.url,
-                    data: this.$el.serialize(),
-                    error: $.proxy(this.result, this),
-                    success: $.proxy(this.result, this),
-                    xhr: function () {
+                _handleSubmit(e, self.settings);
+            });
+        },
 
-                        var xhr = new window.XMLHttpRequest();
+        init: function (options) {
 
-                        // Upload progress
-                        xhr.upload.addEventListener('progress', function (evt) {
-
-                            var percentComplete = Math.round( (evt.loaded / evt.total) * 100);
-                            $('progress', this.$el).html( percentComplete + '%' );
-                            $('progress', this.$el).val( percentComplete );
-
-                        }, false);
-
-                        return xhr;
-                    }
-                };
-
-                // Use FormData if supported, allows sending file input data
-                if (typeof window.FormData === 'function' || typeof window.FormData === 'object') {
-                    options.data = new FormData(this.el);
-                    options.processData = false;
-                    options.contentType = false;
-                }
-
-                $.ajax(options);
-
-                this.setState('loading');
+            if (!options.$el) {
+                console.error('AjaxFormView requires a jQuery element.');
+                return false;
             }
-        });
 
-    App.mediator = new Mediator();
+            this.settings.url = options.$el.attr('action');
 
-    App.mediator.subscribe('ajaxFormLoaded', function (arg) {
+            // merge options and default settings
+            $.extend(true, this.settings, options);
 
-        //...handle response here
-        console.log(arg.response);
+            // bind events
+            this.events();
+
+            return this;
+        }
+    };
+
+    return module.init(options);
+};
+
+$(function(){
+
+    var ajaxForm = new AjaxFormView({
+        $el: $('form#form-1'),
+        stateClasses: {
+            loading: '__loading disabled' // custom loading class
+        },
+        callback: function(response, result) {
+            console.log(response, result);
+        }
     });
 
-    var form = new AjaxFormView();
+    var otherAjaxForm = new AjaxFormView({
+        $el: $('form#form-2')
+    });
 
-})(jQuery, _, Backbone);
+});
