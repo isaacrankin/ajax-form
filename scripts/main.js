@@ -1,5 +1,3 @@
-// TODO: allow for multiple ajax forms on page
-// TODO: decouple setState function
 
 var AjaxFormView = function(options){
 
@@ -7,30 +5,29 @@ var AjaxFormView = function(options){
 
     var _handleSubmit = function (e) {
 
-        var $form = $(e.currentTarget);
+        var $form = $(e.currentTarget),
+            options = {
+                type: 'POST',
+                url: module.settings.url,
+                data: $form.serialize(),
+                error: _handleResult,
+                success: _handleResult,
+                xhr: function () {
 
-        var options = {
-            type: 'POST',
-            url: module.settings.url,
-            data: $form.serialize(),
-            error: _handleResult,
-            success: _handleResult,
-            xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
 
-                var xhr = new window.XMLHttpRequest();
+                    // Upload progress
+                    xhr.upload.addEventListener('progress', function (evt) {
 
-                // Upload progress
-                xhr.upload.addEventListener('progress', function (evt) {
+                        var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                        $('progress', $form).html(percentComplete + '%');
+                        $('progress', $form).val(percentComplete);
 
-                    var percentComplete = Math.round((evt.loaded / evt.total) * 100);
-                    $('progress', $form).html(percentComplete + '%');
-                    $('progress', $form).val(percentComplete);
+                    }, false);
 
-                }, false);
-
-                return xhr;
-            }
-        };
+                    return xhr;
+                }
+            };
 
         // Use FormData if supported, allows sending file input data
         if (typeof window.FormData === 'function' || typeof window.FormData === 'object') {
@@ -62,6 +59,12 @@ var AjaxFormView = function(options){
             }
         },
 
+        clearForm: function(){
+            $('input:not([type="submit"])', this.settings.$el).val('');
+            $('textarea', this.settings.$el).val('');
+            $('select', this.settings.$el).val('');
+        },
+
         setState: function (state) {
 
             var $el = this.settings.$el;
@@ -82,22 +85,17 @@ var AjaxFormView = function(options){
         },
 
         events: function () {
-
-            var self = this;
-
             this.settings.$el.submit(function (e) {
-
                 // Prevent form from submitting normally
                 e.preventDefault();
-
-                _handleSubmit(e, self.settings);
+                _handleSubmit(e);
             });
         },
 
         init: function (options) {
 
             if (!options.$el) {
-                console.error('AjaxFormView requires a jQuery element.');
+                console.error('AjaxFormView requires a jQuery object.');
                 return false;
             }
 
@@ -121,15 +119,28 @@ $(function(){
     var ajaxForm = new AjaxFormView({
         $el: $('form#form-1'),
         stateClasses: {
-            loading: '__loading disabled' // custom loading class
+
+            // custom loading class
+            loading: '__loading disabled'
         },
+
+        // callback after AJAX
         callback: function(response, result) {
-            console.log(response, result);
+            console.log('response', response);
+            console.log('result', result);
         }
     });
 
     var otherAjaxForm = new AjaxFormView({
-        $el: $('form#form-2')
+        $el: $('form#form-2'),
+
+        // callback after AJAX
+        callback: function(response, result) {
+            console.log('response', response);
+            console.log('result', result);
+
+            otherAjaxForm.clearForm();
+        }
     });
 
 });

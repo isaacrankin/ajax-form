@@ -1,7 +1,7 @@
 <!DOCTYPE>
 <html>
     <head>
-        <title>AJAX form</title>
+        <title>AJAX Form Module</title>
         <style type="text/css">
             form{
                 padding: 20px;
@@ -32,10 +32,24 @@
             <fieldset>
                 <p><label for="first-name">First Name</label> <input id="first-name" type="text" name="FirstName"></p>
                 <p><label for="last-name">Last Name</label> <input id="last-name" type="text" name="LastName"></p>
-                <p><label for="comment">Comment</label></p>
+                <p><label for="town">Choose Town</label></p>
+                <p><select name="town" id="town">
+                    <option value="here">Here</option>
+                    <option value="there">There</option>
+                    <option value="everywhere">Everywhere</option>
+                </select></p>
+                <p>
+                    <label for="male">Male</label>
+                    <input type="radio" id="male" name="gender"/>
+                </p>
+                <p>
+                    <label for="female">Female</label>
+                    <input type="radio" id="female" name="gender"/>
+                </p>
                 <p><label for="photo">Photo</label> <input type="file" id="photo" name="photo"/></p>
-                <p><textarea name="comment" id="comment" cols="30" rows="10"></textarea></p>
                 <p><progress value="0" max="100">0%</progress></p>
+                <p><label for="comment">Comment</label></p>
+                <p><textarea name="comment" id="comment" cols="30" rows="10"></textarea></p>
             </fieldset>
             <p><input type="submit" value="submit"></p>
         </form>
@@ -44,6 +58,7 @@
             <h4>Second Form</h4>
             <fieldset>
                 <p><label for="other-first-name">Other First Name</label> <input id="other-first-name" type="text" name="OtherFirstName"></p>
+                <p><label for="photo">Photo</label> <input type="file" id="photo" name="photo"/></p>
             </fieldset>
             <p><input type="submit" value="submit"></p>
         </form>
